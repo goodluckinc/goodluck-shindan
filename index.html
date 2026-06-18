@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>good luck診断</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a0b36 0%, #7d1242 50%, #f37022 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        
+        /* ロゴ画像用のスタイルを追加 */
+        .logo-container {
+            margin-bottom: 15px;
+        }
+        .logo-img {
+            max-width: 220px;
+            width: 100%;
+            height: auto;
+        }
+
+        h1 { color: #1a0b36; font-size: 24px; margin-top: 10px; margin-bottom: 20px; }
+        .subtitle { font-size: 14px; color: #666; margin-bottom: 30px; }
+        .question { font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: left; line-height: 1.5; }
+        .btn-option {
+            display: block;
+            width: 100%;
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-option:hover {
+            background: #fdf0e6;
+            border-color: #f37022;
+            transform: translateY(-2px);
+        }
+        .progress { font-size: 12px; color: #999; margin-bottom: 10px; }
+        .result-title { font-size: 28px; font-weight: bold; color: #7d1242; margin-top: 10px; }
+        .result-desc { text-align: left; background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; line-height: 1.6; }
+        
+        /* LINEカラーのボタン */
+        .cta-btn {
+            display: inline-block;
+            background: #06C755;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(6,199,85,0.4);
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .cta-btn:hover { background: #05b04b; transform: scale(1.02); }
+    </style>
+</head>
+<body>
+
+<div class="card" id="quiz-container">
+    <div id="start-view">
+        <div class="logo-container">
+            <img src="名称未設定のデザイン (9).png" alt="good luck inc. ロゴ" class="logo-img">
+        </div>
+        <h1>good luck 診断</h1>
+        <p class="subtitle">全 9 問・3 分で完了！これまでの自分に good luck！</p>
+        <button class="btn-option" style="text-align:center; background:#1a0b36; color:#fff;" onclick="startQuiz()">診断をスタートする</button>
+    </div>
+
+    <div id="quiz-view" style="display:none;">
+        <div class="progress" id="progress-text">第 1 問 / 9</div>
+        <div class="question" id="question-text">質問文</div>
+        <button class="btn-option" id="opt-A" onclick="selectOption('A')">Aの選択肢</button>
+        <button class="btn-option" id="opt-B" onclick="selectOption('B')">Bの選択肢</button>
+        <button class="btn-option" id="opt-C" onclick="selectOption('C')">Cの選択肢</button>
+    </div>
+
+    <div id="result-view" style="display:none;">
+        <p style="font-size:14px; margin:0; color:#666;">あなたの診断結果は...</p>
+        <div class="result-title" id="result-name">【タイプ名】</div>
+        <div class="result-desc" id="result-text">解説テキスト</div>
+        <p style="font-weight:bold; margin-top:25px;">このタイプが活躍できる環境が、good luckにはあります！</p>
+        
+        <button class="cta-btn" id="submit-btn" onclick="sendToElme()">LINEで結果を報告して話を聞いてみる</button>
+    </div>
+</div>
+
+<script>
+// ⚠️ 取得した「LIFF ID」をここに貼り付けてください
+const MY_LIFF_ID = "ここにLIFF IDを入れてください";
+
+// LIFFの初期化
+document.addEventListener("DOMContentLoaded", function() {
+    liff.init({ liffId: MY_LIFF_ID })
+        .then(() => {
+            console.log("LIFF Initialization Success");
+        })
+        .catch((err) => {
+            console.error("LIFF Initialization failed", err);
+        });
+});
+
+const questions = [
+    { q: "Q1. 新しいプロジェクト、あなたの参加理由は？", a: "面白そうな「仕組み」があるから。", b: "誰かの「役に立ちそう」だから。", c: "自分が「やってみたい」と思ったから。" },
+    { q: "Q2. 目の前に高い壁。どう突破する？", a: "過去の事例を調べて、最短ルートを探す。", b: "仲間に声をかけて、協力体制を作る。", c: "とりあえず体当たりして、突破法を見つける。" },
+    { q: "Q3. 理想のリーダー像は？", a: "的確な指示で、チームを迷わせない人。", b: "一人一人の良さを引き出し、寄り添う人。", c: "自らが先頭に立ち、背中で語る人。" },
+    { q: "Q4. 旅行の計画を立てるなら？", a: "行きたい場所を効率よく回る、タイムスケジュールを作る。", b: "同行者が疲れすぎないよう、休憩スポットを多めに入れる。", c: "その場所でしかできない「一生モノの体験」を仕込む。" },
+    { q: "Q5. プレゼン準備、一番時間をかけるのは？", a: "データの正確性と、ロジックの構築", b: "聞き手の表情を想像した、言葉選び", c: "終わった後に相手が「すぐ動きたくなる」仕掛け作り" },
+    { q: "Q6. 成果を出した自分へのご褒備は？", a: "欲しかった「モノ」を買う。", b: "大切な人と「美味しいもの」を食べる。", c: "次の挑戦に向けた「新しいインプット」に充てる" },
+    { q: "Q7. チームがピンチ！あなたの行動は？", a: "周囲を分析し、解決策を冷静に提示する。", b: "どんよりした空気を変えるため、まず明るく振る舞う。", c: "メンバーの不安を聞き、徹底的に対話する。" },
+    { q: "Q8. あなたにとっての「仕事」とは？", a: "自分のスキルを磨き、高めるもの。", b: "誰かの課題を解決し、感謝されるためのもの。", c: "人と繋がり、熱量を循環させるためのもの。" },
+    { q: "Q9. どんな言葉をかけられたら一番嬉しい？", a: "「さすが、仕事が正確だね！」", b: "「そこまで考えてくれたんだ、ありがとう！」", c: "「あなたと一緒に働けて、本当によかった！」" }
+];
+
+let currentIdx = 0;
+let scores = { A: 0, B: 0, C: 0 };
+let resultTypeName = "";
+
+function startQuiz() {
+    document.getElementById('start-view').style.display = 'none';
+    document.getElementById('quiz-view').style.display = 'block';
+    showQuestion();
+}
+
+function showQuestion() {
+    if(currentIdx < questions.length) {
+        document.getElementById('progress-text').innerText = `第 ${currentIdx + 1} 問 / 9`;
+        document.getElementById('question-text').innerText = questions[currentIdx].q;
+        document.getElementById('opt-A').innerText = "A. " + questions[currentIdx].a;
+        document.getElementById('opt-B').innerText = "B. " + questions[currentIdx].b;
+        document.getElementById('opt-C').innerText = "C. " + questions[currentIdx].c;
+    } else {
+        showResult();
+    }
+}
+
+function selectOption(type) {
+    scores[type]++;
+    currentIdx++;
+    showQuestion();
+}
+
+function showResult() {
+    document.getElementById('quiz-view').style.display = 'none';
+    document.getElementById('result-view').style.display = 'block';
+
+    let finalType = 'A'; 
+    if (scores.B > scores.A && scores.B >= scores.C) {
+        finalType = 'B';
+    } else if (scores.C > scores.A && scores.C > scores.B) {
+        finalType = 'C';
+    }
+
+    const nameEl = document.getElementById('result-name');
+    const textEl = document.getElementById('result-text');
+
+    if(finalType === 'A') {
+        resultTypeName = "エボリューションタイプ";
+        nameEl.innerText = "【起点】" + resultTypeName;
+        textEl.innerHTML = "<strong>【これからのあなた】</strong><br>あなたはまだ形になっていないものを動かせる人です。待つのではなく、自分から未来を始められる。その衝動は、きっと誰かの景色を変えていく。<br><br><strong>👥 向いている役割:</strong> 新規事業、マーケティング、企画、起業志向インターン";
+    } else if(finalType === 'B') {
+        resultTypeName = "クリエイティブタイプ";
+        nameEl.innerText = "【二歩先】" + resultTypeName;
+        textEl.innerHTML = "<strong>【これからのあなた】</strong><br>あなたは相手が気づいていない喜びを先回りして届けられる人です。完成はただのセンスじゃない。誰かの未来を、少し前向きに変える力になる。<br><br><strong>👥 向いている役割:</strong> SNS運用、デザイン、広報・PR、ブランディング";
+    } else {
+        resultTypeName = "パッションタイプ";
+        nameEl.innerText = "【ハートフル】" + resultTypeName;
+        textEl.innerHTML = "<strong>【これからのあなた】</strong><br>あなたは人の心を動かせる人です。熱量は伝染する。あなたの言葉や行動がチームの空気を変えていく。<br><br><strong>👥 向いている役割:</strong> セールス、採用・人事、コミュニティ運営、リーダーポジション";
+    }
+}
+
+// ボタンが押されたら、トークにメッセージを送信して自動でLIFFを閉じる関数
+function sendToElme() {
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerText = "送信中...";
+
+    const textMessage = `【診断完了】私の診断結果は「${resultTypeName}」でした！話を詳しく聞いてみたいです。`;
+
+    if (liff.isInClient()) {
+        liff.sendMessages([{
+            type: 'text',
+            text: textMessage
+        }]).then(() => {
+            liff.closeWindow(); // トークに送信後、自動で診断画面を閉じる
+        }).catch((err) => {
+            console.error('メッセージ送信エラー:', err);
+            alert('メッセージの送信に失敗しました。');
+            btn.disabled = false;
+            btn.innerText = "LINEで結果を報告して話を聞いてみる";
+        });
+    } else {
+        alert("LINEアプリ内で実行してください。\n送信内容: " + textMessage);
+        btn.disabled = false;
+        btn.innerText = "LINEで結果を報告して話を聞いてみる";
+    }
+}
+</script>
+
+</body>
+</html>
