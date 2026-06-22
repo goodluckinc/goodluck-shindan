@@ -216,12 +216,12 @@ function sendToElme() {
             text: textMessage
         }]).then(() => {
             liff.closeWindow(); // トークに送信後、自動で診断画面を閉じる
-        }).catch((err) => {
-            console.error('メッセージ送信エラー:', err);
-            alert('メッセージの送信に失敗しました。');
-            btn.disabled = false;
-            btn.innerText = "LINEで結果を報告して話を聞いてみる";
-        });
+       }).catch((err) => {
+        console.error('メッセージ送信エラー:', err);
+        alert(JSON.stringify(err));
+        btn.disabled = false;
+        btn.innerText = "LINEで結果を報告して話を聞いてみる";
+});
     } else {
         alert("LINEアプリ内で実行してください。\n送信内容: " + textMessage);
         btn.disabled = false;
