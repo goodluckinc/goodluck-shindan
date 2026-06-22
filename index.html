@@ -28,7 +28,7 @@
             box-sizing: border-box;
             text-align: center;
         }
-        
+
         /* ロゴ画像用のスタイルを追加 */
         .logo-container {
             margin-bottom: 15px;
@@ -65,7 +65,7 @@
         .progress { font-size: 12px; color: #999; margin-bottom: 10px; }
         .result-title { font-size: 28px; font-weight: bold; color: #7d1242; margin-top: 10px; }
         .result-desc { text-align: left; background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; line-height: 1.6; }
-        
+
         /* LINEカラーのボタン */
         .cta-btn {
             display: inline-block;
@@ -113,7 +113,7 @@
         <div class="result-title" id="result-name">【タイプ名】</div>
         <div class="result-desc" id="result-text">解説テキスト</div>
         <p style="font-weight:bold; margin-top:25px;">このタイプが活躍できる環境が、good luckにはあります！</p>
-        
+
         <button class="cta-btn" id="submit-btn" onclick="sendToElme()">LINEで結果を報告して話を聞いてみる</button>
     </div>
 </div>
@@ -177,7 +177,7 @@ function showResult() {
     document.getElementById('quiz-view').style.display = 'none';
     document.getElementById('result-view').style.display = 'block';
 
-    let finalType = 'A'; 
+    let finalType = 'A';
     if (scores.B > scores.A && scores.B >= scores.C) {
         finalType = 'B';
     } else if (scores.C > scores.A && scores.C > scores.B) {
@@ -202,7 +202,7 @@ function showResult() {
     }
 }
 
-// ボタンが押されたら、トークにメッセージを送信して自動でLIFFを閉じる関数
+// ボタンが押されたら、LINEのメッセージ送信画面（または友だち追加画面）へ飛ばす関数
 function sendToElme() {
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
@@ -210,25 +210,23 @@ function sendToElme() {
 
     const textMessage = `【診断完了】私の診断結果は「${resultTypeName}」でした！話を詳しく聞いてみたいです。`;
 
-    if (liff.isInClient()) {
-        liff.sendMessages([{
-            type: 'text',
-            text: textMessage
-        }]).then(() => {
-            liff.closeWindow(); // トークに送信後、自動で診断画面を閉じる
-       }).catch((err) => {
-        console.error('メッセージ送信エラー:', err);
-        alert(JSON.stringify(err));
-        btn.disabled = false;
-        btn.innerText = "LINEで結果を報告して話を聞いてみる";
-});
-    } else {
-        alert("LINEアプリ内で実行してください。\n送信内容: " + textMessage);
-        btn.disabled = false;
-        btn.innerText = "LINEで結果を報告して話を聞いてみる";
-    }
-}
-</script>
+    // テキストをURL用に変換（エンコード）
+    const encodedText = encodeURIComponent(textMessage);
 
-</body>
-</html>
+    // 【修正ポイント】
+    // 1. 誰にでもシェア・送信できる画面を開く場合（確実・おすすめ）：
+    const lineUrl = `https://line.me/R/share?text=${encodedText}`;
+
+    // 2. もし特定のLINE公式アカウントのトーク画面に直接テキストを入力させて開きたい場合：
+    // （あなたのアカウントの「LINE ID」が @abc1234 だったとしたら、以下のように書くこともできます）
+    // const lineUrl = `https://line.me/R/oaMessage/@abc1234/?${encodedText}`;
+
+    // LINEアプリを起動して遷移
+    window.location.href = lineUrl;
+
+    // ボタンを元に戻しておく（予備）
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.innerText = "LINEで結果を報告して話を聞いてみる";
+    }, 1000);
+}
