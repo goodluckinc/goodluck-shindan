@@ -204,29 +204,15 @@ function showResult() {
 
 // ボタンが押されたら、LINEのメッセージ送信画面（または友だち追加画面）へ飛ばす関数
 function sendToElme() {
-    const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.innerText = "送信中...";
 
-    const textMessage = `【診断完了】私の診断結果は「${resultTypeName}」でした！話を詳しく聞いてみたいです。`;
+    const textMessage =
+        `【診断完了】私の診断結果は「${resultTypeName}」でした！話を詳しく聞いてみたいです。`;
 
-    // テキストをURL用に変換（エンコード）
     const encodedText = encodeURIComponent(textMessage);
 
-    // 【修正ポイント】
-    // 1. 誰にでもシェア・送信できる画面を開く場合（確実・おすすめ）：
-    const lineUrl = `https://line.me/R/share?text=${encodedText}`;
+    const lineUrl =
+        `https://line.me/R/share?text=${encodedText}`;
 
-    // 2. もし特定のLINE公式アカウントのトーク画面に直接テキストを入力させて開きたい場合：
-    // （あなたのアカウントの「LINE ID」が @abc1234 だったとしたら、以下のように書くこともできます）
-    // const lineUrl = `https://line.me/R/oaMessage/@abc1234/?${encodedText}`;
-
-    // LINEアプリを起動して遷移
     window.location.href = lineUrl;
 
-    // ボタンを元に戻しておく（予備）
-    setTimeout(() => {
-        btn.disabled = false;
-        btn.innerText = "LINEで結果を報告して話を聞いてみる";
-    }, 1000);
 }
