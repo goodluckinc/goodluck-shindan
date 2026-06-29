@@ -206,13 +206,20 @@ function showResult() {
 function sendToElme() {
 
     const textMessage =
-        `【診断完了】私の診断結果は「${resultTypeName}」でした！話を詳しく聞いてみたいです。`;
+        `【診断完了】
+私の診断結果は「${resultTypeName}」でした！
+
+詳しく話を聞いてみたいです。`;
 
     const encodedText = encodeURIComponent(textMessage);
 
+    // 採用公式LINE
     const lineUrl =
-        `https://line.me/R/share?text=${encodedText}`;
+        `https://line.me/R/oaMessage/%40405kwhyo/?${encodedText}`;
 
     window.location.href = lineUrl;
-
 }
+ </script>
+
+</body>
+</html>
